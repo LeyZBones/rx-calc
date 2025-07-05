@@ -1,144 +1,485 @@
 <!DOCTYPE html>
-<html>
+<html lang="en">
+
 <head>
-  <title>Calculator</title>
-  <script>
-    // Comments are like this here
-
-    // this is where you get all your variables out of the form
-    
-    // const VAR_NAME = Number(document.forms["calcForm"][<name>].value)
-    // to get the value
-    
-    // name is literally the name field. 
-    // so if it's <input type="number" name="cat">
-    // then here, if I do
-    // const cat = document.forms["calcForm"]["cat"].value 
-    // then it gets me value of cat. 
-
-    function calculate(event) {
-      event.preventDefault();
-
-      const form = document.forms["calcForm"];
-      const num = Number(form["num"].value); // you only need to do Number() for numbers. 
-      const multiplier = Number(form["multiplier"].value);
-      const yes = form["yes"].checked;
-      const selectedOption = form["color"].value; // the dropdown
-
-      // this is how you yell at people
-      if (isNaN(num) || isNaN(multiplier)) {
-        // put everything in here to yell at people for bad inputs like text
-        alert("Please enter valid numbers");  
-        return;
-      }
-
-      if (num < 0) {
-        alert("Num cannot be less than 0"); // put all the options where you ban neg here
-        return;
-      }
-
-      // Example formula: result = age * multiplier + IF(yes, THEN +20) + 10
-      // SUGGESTION: divide this into variables. if you have many conditions, force them into variables
-      // you want this 'result' equation to have NO MATH OTHER THAN ARITHMETIC. 
-      
-      // IF yes, then 20, else 0
-      // yes ? 20 : 0
-      const yesAddition = yes ? 20 : 0;
-      
-      // dropdown
-      const colorAddition = (() => {
-        switch (selectedOption) {
-          case "red":
-            return 1;
-          case "blue":
-            return 2;
-          case "green":
-            return 3;
-          default:
-            return 0;
-        }
-      })();
-      
-      const result = num * multiplier + yesAddition + colorAddition + 10;
-
-      // Show the result in the result div
-      document.getElementById("result").textContent = "Result: $" + result;
+  <meta charset="UTF-8" />
+  <title>Glasses Price Calculators</title>
+  <style>
+    body {
+      font-family: Arial, sans-serif;
+      margin: 20px;
     }
 
-    function calculate2(event) {
-      event.preventDefault(); // prevent page reload
-      const result = 0;
-      document.getElementById("result2").textContent = "Result: $" + result;
+    label {
+      display: block;
+      margin-top: 10px;
     }
 
-    function handleServiceChange() {
-      const selected = document.getElementById("serviceSelect").value;
-
-      // hide both first
-      document.getElementById("form1Wrapper").style.display = "none";
-      document.getElementById("form2Wrapper").style.display = "none";
-
-      // show selected
-      switch (selected) {
-        case "service1":
-          document.getElementById("form1Wrapper").style.display = "block";
-          break;
-        case "service2": 
-          document.getElementById("form2Wrapper").style.display = "block";
-          break;
-      }
+    input,
+    select {
+      margin-top: 4px;
     }
-  </script>
+
+    #result {
+      margin-top: 20px;
+      font-weight: bold;
+      font-size: 1.2em;
+    }
+
+    input,
+    select {
+      margin: 0 1em 0 1em;
+    }
+  </style>
 </head>
-  
+
 <body>
-  <!-- This is a comment -->
-  <h1>Rx Calculator</h1>
 
-  <!-- Service Selector -->
-  <label>Select Insurance:</label>
-  <select id="serviceSelect" onchange="handleServiceChange()">
-    <option value="">-- Choose Insurance --</option>
-    <option value="service1">VSP Signature</option>
-    <option value="service2">VSP Choice</option>
-    <option value="service2">PSWA SV</option>
-    <option value="service2">PSWA SV (L.O.)</option>
-    <option value="service2">PSWA MF</option>
-    <option value="service2">PSWA MF (L.O.)</option>
-    <option value="service2">UHA</option>
-    <option value="service2">QUEST Eyemed</option>
+  <h1>Glasses Price Calculator</h1>
+
+  <label for="calculatorSelector">Choose Calculator:</label>
+  <select id="calculatorSelector" onchange="renderForm()">
+    <option value="planA">VSP Signature</option>
+    <option value="planB">VSP Choice</option>
+    <option value="planC">PSWA MF</option>
+    <option value="planD">PSWA MF - L.O.</option>
+    <option value="planE">PSWA SV</option>
+    <option value="planF">PSWA SV - L.O.</option>
+    <option value="planG">UHA</option>
+    <option value="planH">QUEST Eyemed</option>
   </select>
-  <br><br>
 
-  <!-- This is the form -->
-  <!-- Fun fact: <br> is a line break -->
-  <div id="form1Wrapper" style="display:none">
-    <form name="calcForm" onsubmit="calculate(event)">
-      <label>Num: <input type="number" name="num" min="0" max="1000" step="0.01"/></label><br><br>
-      <label>Multiplier: <input type="number" name="multiplier" min="1" max="100" step="0.01"/></label><br><br>
+  <form id="calculatorForm" onsubmit="event.preventDefault(); onCalculate();">
+    <!-- Dynamic inputs will appear here -->
+  </form>
 
-      <label>Yes: </label><input type="checkbox" name="yes" /><br><br>
+  <button onclick="onCalculate()">Calculate</button>
 
-      <label>Select: </label><select name="color" id="color">
-        <option value="">--Select--</option>
-        <option value="red">Red (1.00)</option>
-        <option value="blue">Blue (2.00)</option>
-        <option value="green">Green (3.00)</option>
-      </select><br><br>
+  <div id="result"></div>
 
-      <button type="submit">Calculate</button>
-    </form>
-    <div id="result" style="margin-top:20px; font-weight:bold;"></div>
-  </div>
+  <script>
+    function formatUSD(amount) {
+      return new Intl.NumberFormat('en-US', {
+        style: 'currency',
+        currency: 'USD'
+      }).format(amount);
+    }
 
-  <!-- This is the second form -->
-  <div id="form2Wrapper" style="display:none">
-    <form name="form2" onsubmit="calculate2(event)">
-      <!-- Options go here. -->
-      <button type="submit">Calculate</button>
-    </form>
-    <div id="result2" style="margin-top:20px; font-weight:bold;"></div>
-  </div>
+    // --- Calculation Functions ---
 
+    function calculatePlanA(inputs) {
+      const {
+        B2, B3, B4, B5, B6, B7, B8, B9,
+        B10, B11, B12, B13, B14, B15, B16, B17, B18
+      } = inputs;
+
+      const switchB6 = { "n/a": 0, "sv": 76, "ft": 90, "mf": 72 }[B6] ?? 0;
+      const switchB7 = { "none": 0, "A": 37, "C": 61, "D": 75 }[B7] ?? 0;
+      const switchB10 = { "n/a": 0, "poly": 60, "hi-ind": 106 }[B10] ?? 0;
+      const switchB12 = { "n/a": 0, "covered": 0, "K": 50, "J": 80, "F": 90, "O": 120, "N": 160 }[B12] ?? 0;
+      const switchB13 = { "n/a": 0, "sv poly": 80, "sv 1.67": 135, "mf poly": 98, "mf 1.67": 171 }[B13] ?? 0;
+      const switchB14 = { "n/a": 0, "poly": 66, "hi-ind": 91 }[B14] ?? 0;
+      const switchB16 = { "none": 0, "rimlon": 20, "drill": 30, "nosepads": 25 }[B16] ?? 0;
+      const switchB18 = { "n/a": 0, "solid": 13, "gradient": 15 }[B18] ?? 0;
+
+      return (
+        (B2 || 0) + (B3 || 0) + (B4 || 0) +
+        (B5 ? 33 : 0) +
+        switchB6 +
+        switchB7 +
+        (B8 ? 70 : 0) +
+        (B9 ? 10 : 0) +
+        switchB10 +
+        (B11 ? 15 : 0) +
+        switchB12 +
+        switchB13 +
+        switchB14 +
+        (B15 ? 14 : 0) +
+        switchB16 +
+        (B17 ? 6 : 0) +
+        switchB18
+      );
+    }
+
+    function calculatePlanB(inputs) {
+      const {
+        C2, C3, C4, C5, C6, C7, C8, C9,
+        C10, C11, C12, C13, C14, C15, C16, C17, C18
+      } = inputs;
+
+      const switchC6 = { "n/a": 0, "sv": 83, "ft": 98, "mf": 78 }[C6] ?? 0;
+      const switchC7 = { "none": 0, "A": 41, "C": 68, "D": 85 }[C7] ?? 0;
+      const switchC10 = { "n/a": 0, "poly": 65, "hi-ind": 113 }[C10] ?? 0;
+      const switchC12 = { "n/a": 0, "covered": 0, "K": 55, "J": 95, "F": 105, "O": 150, "N": 175 }[C12] ?? 0;
+      const switchC13 = { "n/a": 0, "sv poly": 88, "sv 1.67": 146, "mf poly": 108, "mf 1.67": 185 }[C13] ?? 0;
+      const switchC14 = { "n/a": 0, "poly": 70, "hi-ind": 100 }[C14] ?? 0;
+      const switchC16 = { "none": 0, "rimlon": 20, "drill": 30, "nosepads": 25 }[C16] ?? 0;
+      const switchC18 = { "n/a": 0, "solid": 15, "gradient": 17 }[C18] ?? 0;
+
+      return (
+        (C2 || 0) + (C3 || 0) + (C4 || 0) +
+        (C5 ? 35 : 0) +
+        switchC6 +
+        switchC7 +
+        (C8 ? 75 : 0) +
+        (C9 ? 10 : 0) +
+        switchC10 +
+        (C11 ? 15 : 0) +
+        switchC12 +
+        switchC13 +
+        switchC14 +
+        (C15 ? 16 : 0) +
+        switchC16 +
+        (C17 ? 6 : 0) +
+        switchC18
+      );
+    }
+
+    function calculatePlanC(inputs) {
+      const { G3, G4, F5, F6, F7 } = inputs;
+
+      const baseTotal = (G3 || 0) + (G4 || 0) + (F6 ? 75 : 0) + (F7 ? 60 : 0);
+      const diff = baseTotal - 225;
+
+      const modCost = {
+        rimlon: 20,
+        drill: 40,
+        nosepads: 25,
+        none: 0
+      }[F5] ?? 0;
+
+      return diff < 0 ? modCost : diff + modCost;
+    }
+
+    function calculatePlanD(inputs) {
+      const { G3, G4, F5, F6, F7 } = inputs;
+
+      const modCost = {
+        rimlon: 20,
+        drill: 40,
+        nosepads: 25,
+        none: 0
+      }[F5] ?? 0;
+
+      if ((G3 || 0) === 0) {
+        const baseTotal = (G4 || 0) + (F6 ? 75 : 0) + (F7 ? 60 : 0);
+        const result = baseTotal - 110 + modCost;
+        return result < 0 ? 0 : result;
+      } else {
+        return "Using Lens Only Calculator";
+      }
+    }
+    function calculatePlanE(inputs) {
+      const { H3, H4, F5, F6, F7 } = inputs;
+
+      const baseTotal = (H3 || 0) + (H4 || 0) + (F6 ? 75 : 0) + (F7 ? 60 : 0);
+      const diff = baseTotal - 175;
+
+      const modCost = {
+        rimlon: 20,
+        drill: 40,
+        nosepads: 25,
+        none: 0
+      }[F5] ?? 0;
+
+      return diff < 0 ? modCost : diff + modCost;
+    }
+    function calculatePlanF(inputs) {
+      const { H3, H4, F5, F6, F7 } = inputs;
+
+      if (H3 !== 0) {
+        return 'Using Lens Only Calculator'; // UI will display this message as is
+      }
+
+      const baseTotal = (H4 || 0) + (F6 ? 75 : 0) + (F7 ? 60 : 0);
+      const diff = baseTotal - 60;
+
+      const modCost = {
+        rimlon: 20,
+        drill: 40,
+        nosepads: 25,
+        none: 0
+      }[F5] ?? 0;
+
+      return diff < 0 ? 0 : diff + modCost;
+    }
+    function calculatePlanG(inputs) {
+      const { I3, I4, F5, F6, F7 } = inputs;
+
+      const baseTotal = (I3 || 0) + (I4 || 0) + (F6 ? 75 : 0) + (F7 ? 60 : 0);
+      const diff = baseTotal - 175;
+
+      const modCost = {
+        rimlon: 20,
+        drill: 40,
+        nosepads: 25,
+        none: 0
+      }[F5] ?? 0;
+
+      return diff < 0 ? modCost : diff + modCost;
+    }
+    function calculatePlanH(inputs) {
+      const {
+        J3, J4, J5, J6, J7, J8, J9, J10, J11, J12, J13, J14, J15
+      } = inputs;
+
+      // --- Copay reduction ---
+      const copayReduction = Math.max(0, (J3 - 155) * 0.8);
+
+      // --- Add-on price ---
+      const addOnCost = {
+        Rimlon: 20,
+        Drill: 40,
+        Nosepads: 25,
+        'n/a': 0
+      }[J15] || 0;
+
+      const copayFinal = (J3 - 155) < 0 ? addOnCost : copayReduction + addOnCost;
+
+      // --- Near Variable (J4) ---
+      const nearVarMap = {
+        'n/a': 0, 'Essilor Comp': 270, 'Ideal': 150, 'Ovation': 150
+      };
+      const nearVarRaw = nearVarMap[J4] || 0;
+      const nearVar = Math.max(0, (nearVarRaw * 0.8) - 85);
+
+      // --- Progressive (J5) ---
+      const progMap = {
+        'n/a': 0, 'Accolade': 255, 'Comf 2': 354, 'Comf Max': 354,
+        'Physio DRX': 410, 'Physio W3+': 525, 'X Design': 600, 'XR Design': 650
+      };
+      const progRaw = progMap[J5] || 0;
+      const prog = Math.max(0, (progRaw * 0.8) - 85);
+
+      // --- Sharpview+ (J6) ---
+      const sharpview = J6 === 'Sharpview+' ? 45 : 0;
+
+      // --- Criz (J7) ---
+      const crizMap = {
+        'n/a': 0,
+        'Criz Easy': 108.6,
+        'Xperio': 124.8,
+        'Criz Easy Pro': 144.6,
+        'Criz Rock': 155,
+        'Criz Prev': 179,
+        'Criz Sapp HR': 187
+      };
+      const criz = crizMap[J7] || 0;
+
+      // --- Checkboxes ---
+      const transitions = J8 ? 60 : 0;
+      const liteFilter = J9 ? 128 : 0;
+      const uvProtection = J10 ? 15 : 0;
+
+      const polarizationMap = {
+        'n/a': 0,
+        'Polarized': 192,
+        'Tran+Polarized': 280
+      };
+      const polarization = polarizationMap[J11] || 0;
+
+      const edgePolish = J12 ? 108 : 0;
+      const prism = J13 ? 160 : 0;
+      const scratch = J14 ? 8 : 0;
+
+      const total = copayFinal + nearVar + prog + sharpview + criz +
+        transitions + liteFilter + uvProtection +
+        polarization + edgePolish + prism + scratch;
+      return formatUSD(total);
+    }
+
+
+    // --- Form Configurations ---
+
+    const formConfigs = {
+      planA: {
+        fields: [
+          { id: 'B2', label: 'Exam Copay', type: 'number' },
+          { id: 'B3', label: 'Materials Copay', type: 'number' },
+          { id: 'B4', label: 'Frame', type: 'number' },
+          { id: 'B5', label: 'Poly', type: 'checkbox' },
+          { id: 'B6', label: '1.67', type: 'select', options: ['n/a', 'sv', 'ft', 'mf'] },
+          { id: 'B7', label: 'A/R', type: 'select', options: ['none', 'A', 'C', 'D'] },
+          { id: 'B8', label: 'Transitions', type: 'checkbox' },
+          { id: 'B9', label: 'UV Protection', type: 'checkbox' },
+          { id: 'B10', label: 'Eyezen', type: 'select', options: ['n/a', 'poly', 'hi-ind'] },
+          { id: 'B11', label: 'Lite Filter (clr Eyezen only)', type: 'checkbox' },
+          { id: 'B12', label: 'Progressive', type: 'select', options: ['n/a', 'covered', 'K', 'J', 'F', 'O', 'N'] },
+          { id: 'B13', label: 'Polarized + Mat', type: 'select', options: ['n/a', 'sv poly', 'sv 1.67', 'mf poly', 'mf 1.67'] },
+          { id: 'B14', label: 'Near Variable Focus (Comp) + Mat', type: 'select', options: ['n/a', 'poly', 'hi-ind'] },
+          { id: 'B15', label: 'Edge Polish', type: 'checkbox' },
+          { id: 'B16', label: 'Add On', type: 'select', options: ['none', 'rimlon', 'drill', 'nosepads'] },
+          { id: 'B17', label: 'Prism', type: 'checkbox' },
+          { id: 'B18', label: 'Tint (Dyes)', type: 'select', options: ['n/a', 'solid', 'gradient'] }
+        ],
+        calculate: calculatePlanA
+      },
+      planB: {
+        fields: [
+          { id: 'C2', label: 'Exam Copay', type: 'number' },
+          { id: 'C3', label: 'Materials Copay', type: 'number' },
+          { id: 'C4', label: 'Frame', type: 'number' },
+          { id: 'C5', label: 'Poly', type: 'checkbox' },
+          { id: 'C6', label: '1.67', type: 'select', options: ['n/a', 'sv', 'ft', 'mf'] },
+          { id: 'C7', label: 'A/R', type: 'select', options: ['none', 'A', 'C', 'D'] },
+          { id: 'C8', label: 'Transitions', type: 'checkbox' },
+          { id: 'C9', label: 'UV Protection', type: 'checkbox' },
+          { id: 'C10', label: 'Eyezen', type: 'select', options: ['n/a', 'poly', 'hi-ind'] },
+          { id: 'C11', label: 'Lite Filter (clr Eyezen only)', type: 'checkbox' },
+          { id: 'C12', label: 'Progressive', type: 'select', options: ['n/a', 'covered', 'K', 'J', 'F', 'O', 'N'] },
+          { id: 'C13', label: 'Polarized + Mat', type: 'select', options: ['n/a', 'sv poly', 'sv 1.67', 'mf poly', 'mf 1.67'] },
+          { id: 'C14', label: 'Near Variable Focus (Comp) + Mat', type: 'select', options: ['n/a', 'poly', 'hi-ind'] },
+          { id: 'C15', label: 'Edge Polish', type: 'checkbox' },
+          { id: 'C16', label: 'Add On', type: 'select', options: ['none', 'rimlon', 'drill', 'nosepads'] },
+          { id: 'C17', label: 'Prism', type: 'checkbox' },
+          { id: 'C18', label: 'Tint (Dyes)', type: 'select', options: ['n/a', 'solid', 'gradient'] }
+        ],
+        calculate: calculatePlanB
+      },
+      planC: {
+        fields: [
+          { id: 'G3', label: 'Frame', type: 'number' },
+          { id: 'G4', label: 'Lens Pkg', type: 'number' },
+          { id: 'F5', label: 'Add On', type: 'select', options: ['none', 'rimlon', 'drill', 'nosepads'] },
+          { id: 'F6', label: 'Transitions', type: 'checkbox' },
+          { id: 'F7', label: 'Hi-Ind', type: 'checkbox' }
+        ],
+        calculate: calculatePlanC
+      },
+      planD: {
+        fields: [
+          { id: 'G3', label: 'Frame', type: 'number' },
+          { id: 'G4', label: 'Lens Pkg', type: 'number' },
+          { id: 'F5', label: 'Add On', type: 'select', options: ['none', 'rimlon', 'drill', 'nosepads'] },
+          { id: 'F6', label: 'Transitions', type: 'checkbox' },
+          { id: 'F7', label: 'Hi-Ind', type: 'checkbox' }
+        ],
+        calculate: calculatePlanD
+      },
+      planE: {
+        fields: [
+          { id: 'H3', label: 'Frame', type: 'number' },
+          { id: 'H4', label: 'Lens Pkg', type: 'number' },
+          { id: 'F5', label: 'Add On', type: 'select', options: ['none', 'rimlon', 'drill', 'nosepads'] },
+          { id: 'F6', label: 'Transitions', type: 'checkbox' },
+          { id: 'F7', label: 'Hi-Ind', type: 'checkbox' }
+        ],
+        calculate: calculatePlanE
+      },
+      planF: {
+        fields: [
+          { id: 'H3', label: 'Frame', type: 'number' },
+          { id: 'H4', label: 'Lens Pkg', type: 'number' },
+          { id: 'F5', label: 'Add On', type: 'select', options: ['none', 'rimlon', 'drill', 'nosepads'] },
+          { id: 'F6', label: 'Transitions', type: 'checkbox' },
+          { id: 'F7', label: 'Hi-Ind', type: 'checkbox' }
+        ],
+        calculate: calculatePlanF
+      },
+      planG: {
+        fields: [
+          { id: 'I3', label: 'Frame', type: 'number' },
+          { id: 'I4', label: 'Lens Pkg', type: 'number' },
+          { id: 'F5', label: 'Add On', type: 'select', options: ['none', 'rimlon', 'drill', 'nosepads'] },
+          { id: 'F6', label: 'Transitions', type: 'checkbox' },
+          { id: 'F7', label: 'Hi-Ind', type: 'checkbox' }
+        ],
+        calculate: calculatePlanG
+      },
+      planH: {
+        fields: [
+          { id: 'J3', label: 'Frame (U&C)', type: 'number' },
+          { id: 'J4', label: 'Progressive (Standard)', type: 'select', options: ['n/a', 'Essilor Comp', 'Ideal', 'Ovation'] },
+          { id: 'J5', label: 'Progressive (Premium)', type: 'select', options: ['n/a', 'Accolade', 'Comf 2', 'Comf Max', 'Physio DRX', 'Physio W3+', 'X Design', 'XR Design'] },
+          { id: 'J6', label: 'A/R (Standard)', type: 'select', options: ['n/a', 'Sharpview+'] },
+          { id: 'J7', label: 'A/R (Premium) + UV', type: 'select', options: ['n/a', 'Criz Easy', 'Xperio', 'Criz Easy Pro', 'Criz Rock', 'Criz Prev', 'Criz Sapp HR'] },
+          { id: 'J8', label: 'Poly', type: 'checkbox' },
+          { id: 'J9', label: 'Hi-Ind', type: 'checkbox' },
+          { id: 'J10', label: 'Tint', type: 'checkbox' },
+          { id: 'J11', label: 'Polarized', type: 'select', options: ['n/a', 'Polarized', 'Tran+Polarized'] },
+          { id: 'J12', label: 'Eyezen', type: 'checkbox' },
+          { id: 'J13', label: 'Transitions', type: 'checkbox' },
+          { id: 'J14', label: 'Prism', type: 'checkbox' },
+          { id: 'J15', label: 'Misc', type: 'select', options: ['n/a', 'Rimlon', 'Drill', 'Nosepads'] }
+        ],
+        calculate: calculatePlanH
+      }
+    };
+
+    // --- Render Form Inputs Dynamically ---
+    function renderForm() {
+      const plan = document.getElementById('calculatorSelector').value;
+      const form = document.getElementById('calculatorForm');
+      form.innerHTML = ''; // clear old inputs
+
+      const config = formConfigs[plan];
+      config.fields.forEach(field => {
+        const label = document.createElement('label');
+        label.htmlFor = field.id;
+        label.textContent = field.label;
+
+        let input;
+        if (field.type === 'select') {
+          input = document.createElement('select');
+          input.id = field.id;
+          field.options.forEach(opt => {
+            const option = document.createElement('option');
+            option.value = opt;
+            option.textContent = opt;
+            input.appendChild(option);
+          });
+        } else if (field.type === 'checkbox') {
+          input = document.createElement('input');
+          input.type = 'checkbox';
+          input.id = field.id;
+        } else {
+          input = document.createElement('input');
+          input.type = field.type;
+          input.id = field.id;
+          input.value = 0; // default numeric value
+          if (field.type === 'number') input.min = 0;
+        }
+
+        label.appendChild(input);
+        form.appendChild(label);
+      });
+    }
+
+    // --- Gather inputs from form ---
+    function getInputsFromForm(plan) {
+      const config = formConfigs[plan];
+      const inputs = {};
+      config.fields.forEach(field => {
+        const el = document.getElementById(field.id);
+        if (!el) return;
+
+        if (field.type === 'checkbox') {
+          inputs[field.id] = el.checked;
+        } else if (field.type === 'number') {
+          inputs[field.id] = parseFloat(el.value) || 0;
+        } else {
+          inputs[field.id] = el.value;
+        }
+      });
+      return inputs;
+    }
+
+    // --- Calculate and display result ---
+    function onCalculate() {
+      const selectedPlan = document.getElementById('calculatorSelector').value;
+      const inputs = getInputsFromForm(selectedPlan);
+      const result = formConfigs[selectedPlan].calculate(inputs);
+      displayResult(result);
+    }
+
+    function displayResult(value) {
+      const resultDiv = document.getElementById('result');
+      resultDiv.textContent = value;
+    }
+
+    // Initialize form on page load
+    window.onload = renderForm;
+  </script>
 </body>
+
 </html>
